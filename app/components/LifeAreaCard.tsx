@@ -63,9 +63,9 @@ export default function LifeAreaCard({
   const isInlineEditing = isEditing && !isDesktop && draft;
 
   return (
-    <div className="group relative flex flex-col rounded-2xl bg-white p-6 shadow-sm ring-1 ring-neutral-100 transition-all duration-200 hover:shadow-md hover:ring-neutral-200">
+    <div className="group relative flex flex-col rounded-3xl bg-white/80 p-6 shadow-sm ring-1 ring-neutral-100/50 transition-opacity duration-500 hover:opacity-90">
       {/* Confidence dots driven by canonical confidence value */}
-      <div className="mb-4 flex gap-1.5">
+      <div className="mb-5 flex gap-1.5">
         {CONFIDENCE_SCALE.map((option, index) => {
           const isActiveOrBelow = index <= activeConfidenceIndex;
           return (
@@ -73,8 +73,8 @@ export default function LifeAreaCard({
               key={option.id}
               className={`h-1.5 w-1.5 rounded-full transition-colors ${
                 isActiveOrBelow
-                  ? "bg-neutral-700 opacity-80"
-                  : "bg-neutral-200 opacity-40"
+                  ? "bg-neutral-600 opacity-60"
+                  : "bg-neutral-200 opacity-30"
               }`}
             />
           );
@@ -84,34 +84,40 @@ export default function LifeAreaCard({
       <button
         type="button"
         onClick={onStartEdit}
-        className="mb-3 flex items-baseline justify-between text-left"
+        className="mb-4 flex items-baseline justify-between text-left"
       >
-        <h3 className="text-lg font-light text-neutral-800">{data.name}</h3>
+        <h3 className="text-base font-extralight text-neutral-600">{data.name}</h3>
         {!isEditing && (
-          <span className="text-xs text-neutral-400">
-            Step into this for a moment
+          <span className="invisible text-xs font-extralight text-neutral-300 opacity-0 transition-opacity duration-500 group-hover:visible group-hover:opacity-60">
+            Reflect on this
           </span>
         )}
       </button>
 
-      {/* Read-only summary */}
+      {/* Read-only summary - softened hierarchy */}
       {!isInlineEditing && (
         <div className="space-y-3 text-sm">
-          <p className="line-clamp-4 leading-relaxed text-neutral-600">
-            {data.currentState || "You can leave this blank until words show up."}
+          {/* One emotional signal - emphasized */}
+          <p className="text-xs font-light text-neutral-500">
+            {currentConfidenceLabel === "Very unclear" || currentConfidenceLabel === "Unclear"
+              ? "Clarity feels low right now"
+              : currentConfidenceLabel === "Forming"
+              ? "Clarity is beginning to form"
+              : currentConfidenceLabel === "Clear-ish" || currentConfidenceLabel === "Mostly clear"
+              ? "Clarity feels present"
+              : "Clarity feels low right now"}
           </p>
-          <p className="text-xs text-neutral-500">
-            Clarity right now: {currentConfidenceLabel}
-          </p>
-          {data.topQuestion && (
-            <p className="text-xs text-neutral-500">
-              Question on your mind:{" "}
-              <span className="italic">{data.topQuestion}</span>
+          
+          {/* One short preview line - reduced contrast */}
+          {data.currentState ? (
+            <p className="line-clamp-2 leading-relaxed text-neutral-500/70">
+              {data.currentState}
+            </p>
+          ) : (
+            <p className="text-xs font-extralight leading-relaxed text-neutral-400/80">
+              Unclear is still a valid state.
             </p>
           )}
-          <p className="pt-1 text-xs leading-relaxed text-neutral-400">
-            {data.helper}
-          </p>
         </div>
       )}
 
@@ -202,21 +208,21 @@ export default function LifeAreaCard({
 
           {/* Gentle action footer */}
           <section className="space-y-3 pt-2">
-            <p className="text-xs leading-relaxed text-neutral-400">
+            <p className="text-xs font-light leading-relaxed text-neutral-400">
               You can stop here anytime.
             </p>
             <div className="space-y-2">
               <button
                 type="button"
                 onClick={onPrimaryAction}
-                className="flex w-full items-center justify-center rounded-full bg-neutral-800 px-4 py-2.5 text-sm font-medium text-neutral-50 shadow-sm transition-colors hover:bg-neutral-700"
+                className="flex w-full items-center justify-center rounded-full border border-neutral-300 bg-white px-4 py-2.5 text-sm font-light text-neutral-700 transition-colors hover:border-neutral-400 hover:bg-neutral-50"
               >
                 This is enough for now
               </button>
               <button
                 type="button"
                 onClick={onSecondaryAction}
-                className="w-full text-center text-xs text-neutral-500 underline-offset-2 hover:underline"
+                className="w-full text-center text-xs font-light text-neutral-400 underline-offset-2 hover:text-neutral-500 hover:underline"
               >
                 I&apos;ll come back to this
               </button>

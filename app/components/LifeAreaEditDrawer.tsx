@@ -138,14 +138,14 @@ export default function LifeAreaEditDrawer({
               <button
                 type="button"
                 onClick={onSaveAndClose}
-                className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-50 shadow-sm transition-colors hover:bg-neutral-800"
+                className="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-light text-neutral-700 transition-colors hover:border-neutral-400 hover:bg-neutral-50"
               >
                 This is enough for now
               </button>
               <button
                 type="button"
                 onClick={onDiscardAndClose}
-                className="text-xs text-neutral-500 underline-offset-2 hover:underline"
+                className="text-xs font-light text-neutral-400 underline-offset-2 hover:text-neutral-500 hover:underline"
               >
                 I&apos;ll come back to this
               </button>

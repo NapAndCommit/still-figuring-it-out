@@ -94,35 +94,63 @@ export default function Dashboard() {
     finishEditSession();
   };
 
+  // Calculate if last row needs centering
+  const totalCards = lifeAreas.length;
+  const lgCols = 3;
+  const fullRows = Math.floor(totalCards / lgCols);
+  const cardsInLastRow = totalCards % lgCols;
+  const needsCentering = cardsInLastRow > 0 && cardsInLastRow < lgCols;
+  const lastRowStartIndex = fullRows * lgCols;
+
   return (
     <div className="mx-auto max-w-5xl">
-      {/* Intro section */}
-      <div className="mb-16 text-center">
-        <p className="mx-auto max-w-2xl text-lg leading-relaxed text-neutral-600">
-          This is a space to hold what you don't have answers to yet.
-        </p>
-        <p className="mt-4 text-sm text-neutral-500">
-          Nothing here needs to be finished. You can change your words
-          whenever they no longer feel true.
+      {/* Permission layer - soft header */}
+      <div className="mb-16 pt-10">
+        <p className="text-xs font-extralight leading-relaxed text-neutral-400 max-w-2xl">
+          This isn't a place to measure progress. It's a place to notice.
         </p>
       </div>
 
       {/* Life Areas Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {lifeAreas.map((area) => (
-          <LifeAreaCard
-            key={area.id}
-            data={area}
-            isEditing={activeEditAreaId === area.id}
-            draft={
-              activeEditAreaId === area.id && editDraft ? editDraft : null
+      <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+        {lifeAreas.map((area, index) => {
+          const isInLastRow = index >= lastRowStartIndex;
+          let gridColumnClass = "";
+          
+          if (isInLastRow && needsCentering) {
+            // Center the last row items
+            if (cardsInLastRow === 1) {
+              gridColumnClass = "lg:col-start-2";
+            } else if (cardsInLastRow === 2) {
+              // For 2 cards, start first at col 2 to center the pair
+              const positionInLastRow = index - lastRowStartIndex;
+              gridColumnClass = positionInLastRow === 0 ? "lg:col-start-2" : "";
             }
-            onStartEdit={() => startEditForArea(area.id)}
-            onChangeDraft={setEditDraft}
-            onPrimaryAction={handlePrimaryAction}
-            onSecondaryAction={handleSecondaryAction}
-          />
-        ))}
+          }
+          
+          return (
+            <div key={area.id} className={gridColumnClass}>
+              <LifeAreaCard
+                data={area}
+                isEditing={activeEditAreaId === area.id}
+                draft={
+                  activeEditAreaId === area.id && editDraft ? editDraft : null
+                }
+                onStartEdit={() => startEditForArea(area.id)}
+                onChangeDraft={setEditDraft}
+                onPrimaryAction={handlePrimaryAction}
+                onSecondaryAction={handleSecondaryAction}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Reassurance element */}
+      <div className="mt-20 mb-8">
+        <p className="text-xs font-extralight text-neutral-300 text-center">
+          You come back when you need to.
+        </p>
       </div>
 
       {/* Desktop edit drawer */}

@@ -21,7 +21,11 @@ export default function RootLayout({
             </h1>
           </div>
         </header>
-        <main className="mx-auto max-w-4xl px-6 py-12">{children}</main>
+        <main className="mx-auto max-w-4xl px-6 py-12">
+          <div className="min-h-[calc(100vh-8rem)] rounded-3xl bg-amber-50/30 px-8 py-10 shadow-sm ring-1 ring-neutral-100/20">
+            {children}
+          </div>
+        </main>
       </body>
     </html>
   );
