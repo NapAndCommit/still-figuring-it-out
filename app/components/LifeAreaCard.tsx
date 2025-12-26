@@ -62,54 +62,112 @@ export default function LifeAreaCard({
 
   const isInlineEditing = isEditing && !isDesktop && draft;
 
+  // Split currentState into two paragraphs at natural sentence boundary to reduce density
+  const splitCurrentState = useMemo(() => {
+    const text = data.currentState || "You can leave this blank until words show up.";
+    const sentenceBreak = text.indexOf(". ");
+    if (sentenceBreak > 0 && sentenceBreak < text.length - 2) {
+      return [
+        text.substring(0, sentenceBreak + 1),
+        text.substring(sentenceBreak + 2).trim(),
+      ];
+    }
+    return [text];
+  }, [data.currentState]);
+
+  // Generate subtle tooltip text for accessibility
+  const clarityTooltip = useMemo(() => {
+    const level = currentConfidenceLabel.toLowerCase();
+    if (level.includes("very unclear")) return "Clarity feels very low right now";
+    if (level.includes("unclear")) return "Clarity feels low right now";
+    if (level.includes("forming")) return "Clarity is beginning to form";
+    if (level.includes("clear-ish")) return "Clarity feels somewhat present";
+    return "Clarity feels mostly present";
+  }, [currentConfidenceLabel]);
+
   return (
-    <div className="group relative flex flex-col rounded-2xl bg-white p-6 shadow-sm ring-1 ring-neutral-100 transition-all duration-200 hover:shadow-md hover:ring-neutral-200">
+    <div
+      onClick={!isEditing ? onStartEdit : undefined}
+      className="group relative flex h-full cursor-pointer flex-col rounded-2xl bg-white p-5 shadow-sm ring-1 ring-neutral-100 transition-all duration-200 hover:shadow-md hover:ring-neutral-200 hover:-translate-y-0.5 focus-within:ring-2 focus-within:ring-neutral-300 focus-within:shadow-md focus-within:outline-none active:translate-y-0 active:shadow-sm sm:p-6"
+      role={!isEditing ? "button" : undefined}
+      tabIndex={!isEditing ? 0 : undefined}
+      onKeyDown={
+        !isEditing
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onStartEdit();
+              }
+            }
+          : undefined
+      }
+      aria-label={!isEditing ? `Open ${data.name} for reflection` : undefined}
+    >
       {/* Confidence dots driven by canonical confidence value */}
-      <div className="mb-4 flex gap-1.5">
+      <div
+        className="mb-4 flex gap-1.5 sm:mb-3 sm:gap-1"
+        role="img"
+        aria-label={clarityTooltip}
+        title={clarityTooltip}
+      >
         {CONFIDENCE_SCALE.map((option, index) => {
           const isActiveOrBelow = index <= activeConfidenceIndex;
+          // Create a more nuanced opacity scale that reflects clarity
+          // Lower clarity = more subtle, higher clarity = slightly more visible
+          const opacityMap = [0.25, 0.35, 0.5, 0.65, 0.75]; // Very unclear to Mostly clear
+          const baseOpacity = opacityMap[index] || 0.25;
+          const activeOpacity = isActiveOrBelow ? baseOpacity : 0.12;
+          
           return (
             <div
               key={option.id}
-              className={`h-1.5 w-1.5 rounded-full transition-colors ${
+              className={`rounded-full transition-all duration-300 ${
                 isActiveOrBelow
-                  ? "bg-neutral-700 opacity-80"
-                  : "bg-neutral-200 opacity-40"
+                  ? "h-2.5 w-2.5 bg-neutral-600 sm:h-2 sm:w-2"
+                  : "h-1.5 w-1.5 bg-neutral-300 sm:h-1 sm:w-1"
               }`}
+              style={{
+                opacity: activeOpacity,
+              }}
             />
           );
         })}
       </div>
 
-      <button
-        type="button"
-        onClick={onStartEdit}
-        className="mb-3 flex items-baseline justify-between text-left"
-      >
-        <h3 className="text-lg font-light text-neutral-800">{data.name}</h3>
-        {!isEditing && (
-          <span className="text-xs text-neutral-400">
-            Step into this for a moment
-          </span>
-        )}
-      </button>
+      <div className="mb-3 text-left">
+        <h3 className="text-lg font-light text-neutral-800 sm:text-base">
+          {data.name}
+        </h3>
+      </div>
 
       {/* Read-only summary */}
       {!isInlineEditing && (
-        <div className="space-y-3 text-sm">
-          <p className="line-clamp-4 leading-relaxed text-neutral-600">
-            {data.currentState || "You can leave this blank until words show up."}
-          </p>
-          <p className="text-xs text-neutral-500">
-            Clarity right now: {currentConfidenceLabel}
-          </p>
+        <div className="space-y-3 text-sm sm:space-y-2.5 sm:text-[15px]">
+          <div className="space-y-2.5 leading-relaxed text-neutral-600 sm:space-y-2">
+            {splitCurrentState.map((paragraph, index) => (
+              <p
+                key={index}
+                className="leading-relaxed sm:leading-relaxed"
+              >
+                {paragraph}
+              </p>
+            ))}
+          </div>
+          <div className="pt-3 space-y-1">
+            <p className="text-[10px] font-medium uppercase tracking-wide text-neutral-400/70 sm:text-[9px]">
+              Clarity right now
+            </p>
+            <p className="text-xs font-normal text-neutral-700 sm:text-[13px]">
+              {currentConfidenceLabel}
+            </p>
+          </div>
           {data.topQuestion && (
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-500 sm:text-[11px]">
               Question on your mind:{" "}
               <span className="italic">{data.topQuestion}</span>
             </p>
           )}
-          <p className="pt-1 text-xs leading-relaxed text-neutral-400">
+          <p className="pt-1 text-xs leading-relaxed text-neutral-400 sm:text-[11px] sm:leading-relaxed">
             {data.helper}
           </p>
         </div>
@@ -117,7 +175,10 @@ export default function LifeAreaCard({
 
       {/* Inline editing surface (mobile & tablet only) */}
       {isInlineEditing && draft && (
-        <div className="mt-3 space-y-6 rounded-xl bg-neutral-50/80 p-4 pb-6">
+        <div
+          className="mt-3 space-y-6 rounded-xl bg-neutral-50/80 p-4 pb-6"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Current state section */}
           <section className="space-y-2">
             <p className="text-[11px] font-normal uppercase tracking-wide text-neutral-500/90">
