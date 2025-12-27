@@ -5,7 +5,7 @@ export type ConfidenceLevel =
   | "clear-ish"
   | "mostly-clear";
 
-interface ConfidenceConfig {
+export interface ConfidenceConfig {
   id: ConfidenceLevel;
   label: string;
 }

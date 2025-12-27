@@ -1,7 +1,50 @@
  "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { LifeAreaData } from "./LifeAreaCard";
-import { CONFIDENCE_SCALE } from "./confidence";
+import { CONFIDENCE_SCALE, ConfidenceConfig } from "./confidence";
+
+interface ConfidenceDotProps {
+  option: ConfidenceConfig;
+  active: boolean;
+  onClick: () => void;
+}
+
+function ConfidenceDot({ option, active, onClick }: ConfidenceDotProps) {
+  const [isActive, setIsActive] = useState(active);
+
+  useEffect(() => {
+    // Add delay before state update
+    const timer = setTimeout(() => {
+      setIsActive(active);
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [active]);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex flex-col items-center gap-1 text-[11px]"
+      aria-label={option.label}
+    >
+      <span
+        className={`rounded-full border transition-all duration-300 ease-out ${
+          isActive
+            ? "h-2.5 w-2.5 border-neutral-600 bg-neutral-600"
+            : "h-2 w-2 border-neutral-300 bg-neutral-100"
+        }`}
+      />
+      <span
+        className={`whitespace-nowrap text-[10px] transition-colors duration-300 ease-out ${
+          isActive ? "text-neutral-800" : "text-neutral-400"
+        }`}
+      >
+        {option.label}
+      </span>
+    </button>
+  );
+}
 
 interface LifeAreaEditDrawerProps {
   open: boolean;
@@ -18,22 +61,81 @@ export default function LifeAreaEditDrawer({
   onSaveAndClose,
   onDiscardAndClose,
 }: LifeAreaEditDrawerProps) {
+  const [contentOpacity, setContentOpacity] = useState(0);
+  const [hasTyped, setHasTyped] = useState(false);
+  const initialDataRef = useRef<LifeAreaData | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (open && data) {
+      initialDataRef.current = { ...data };
+      setHasTyped(false);
+      // Delay content fade-in slightly after drawer opens
+      setTimeout(() => setContentOpacity(1), 50);
+    } else {
+      setContentOpacity(0);
+    }
+  }, [open, data]);
+
+  // Auto-expand textarea
+  useEffect(() => {
+    if (textareaRef.current && data) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.max(120, textareaRef.current.scrollHeight)}px`;
+    }
+  }, [data?.currentState]);
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    // Check if click is on the backdrop (not on the drawer panel)
+    const target = e.target as HTMLElement;
+    const drawer = target.closest('aside');
+    
+    // If click is not inside the drawer, close it
+    if (!drawer) {
+      // Passive exit - only save if user has typed
+      if (hasTyped) {
+        onSaveAndClose();
+      } else {
+        onDiscardAndClose();
+      }
+    }
+  };
+
+  const handleChange = (updated: LifeAreaData) => {
+    if (!hasTyped) {
+      const hasChanged = JSON.stringify(updated) !== JSON.stringify(initialDataRef.current);
+      if (hasChanged) {
+        setHasTyped(true);
+      }
+    }
+    onChange(updated);
+  };
+
   if (!data) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-40 bg-neutral-900/30 backdrop-blur-sm transition-opacity duration-200 ${
+      className={`fixed inset-0 z-40 transition-opacity duration-300 ${
         open ? "opacity-100" : "pointer-events-none opacity-0"
       }`}
       aria-hidden={!open}
+      onClick={handleBackdropClick}
     >
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-neutral-900/30 backdrop-blur-sm" />
+      
+      {/* Drawer container */}
       <div className="flex h-full justify-end">
         <aside
-          className={`relative flex h-full w-full max-w-xl flex-col bg-white shadow-xl ring-1 ring-neutral-200 transition-transform duration-200 ${
+          className={`relative flex h-full w-full max-w-xl flex-col bg-white shadow-xl ring-1 ring-neutral-200 transition-transform duration-300 ease-out ${
             open ? "translate-x-0" : "translate-x-full"
           }`}
+          onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex-1 overflow-y-auto px-6 pb-32 pt-6">
+          <div 
+            className="flex-1 overflow-y-auto px-6 pb-32 pt-6 transition-opacity duration-300"
+            style={{ opacity: contentOpacity }}
+          >
             {/* Header */}
             <header className="mb-6 space-y-1.5">
               <h2 className="text-lg font-light text-neutral-900">
@@ -52,13 +154,17 @@ export default function LifeAreaEditDrawer({
                   Current state
                 </p>
                 <textarea
+                  ref={textareaRef}
                   value={data.currentState}
                   onChange={(e) =>
-                    onChange({ ...data, currentState: e.target.value })
+                    handleChange({ ...data, currentState: e.target.value })
                   }
-                  rows={5}
-                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-800 shadow-sm outline-none focus:border-neutral-300 focus:ring-0"
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-800 shadow-sm outline-none focus:border-neutral-300 focus:ring-0 placeholder:transition-opacity placeholder:duration-200 overflow-hidden"
                   placeholder="What does this area feel like right now? You can write in fragments or unfinished thoughts."
+                  style={{
+                    minHeight: '120px',
+                    resize: 'none',
+                  }}
                 />
                 <p className="text-xs leading-relaxed text-neutral-400">
                   You don&apos;t need to be precise. This can change later.
@@ -75,38 +181,22 @@ export default function LifeAreaEditDrawer({
                     {CONFIDENCE_SCALE.map((option) => {
                       const active = data.confidence === option.id;
                       return (
-                        <button
+                        <ConfidenceDot
                           key={option.id}
-                          type="button"
+                          option={option}
+                          active={active}
                           onClick={() =>
-                            onChange({
+                            handleChange({
                               ...data,
                               confidence: option.id,
                             })
                           }
-                          className="flex flex-col items-center gap-1 text-[11px]"
-                          aria-label={option.label}
-                        >
-                          <span
-                            className={`h-2 w-2 rounded-full border transition-colors ${
-                              active
-                                ? "border-neutral-700 bg-neutral-700"
-                                : "border-neutral-300 bg-neutral-100"
-                            }`}
-                          />
-                          <span
-                            className={`whitespace-nowrap text-[10px] ${
-                              active ? "text-neutral-800" : "text-neutral-400"
-                            }`}
-                          >
-                            {option.label}
-                          </span>
-                        </button>
+                        />
                       );
                     })}
                   </div>
                   <p className="pt-1 text-xs text-neutral-400">
-                    This is just how it feels right now.
+                    This reflects how things feel right now.
                   </p>
                 </div>
               </section>
@@ -120,10 +210,10 @@ export default function LifeAreaEditDrawer({
                   type="text"
                   value={data.topQuestion}
                   onChange={(e) =>
-                    onChange({ ...data, topQuestion: e.target.value })
+                    handleChange({ ...data, topQuestion: e.target.value })
                   }
-                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-800 shadow-sm outline-none focus:border-neutral-300 focus:ring-0"
-                  placeholder="What’s the main thing you’re unsure about here?"
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-800 shadow-sm outline-none focus:border-neutral-300 focus:ring-0 placeholder:transition-opacity placeholder:duration-200"
+                  placeholder="What's the main thing you're unsure about here?"
                 />
                 <p className="text-xs leading-relaxed text-neutral-400">
                   This can change later.
