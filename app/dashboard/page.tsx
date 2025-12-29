@@ -1,68 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LifeAreaCard, { LifeAreaData } from "../components/LifeAreaCard";
 import LifeAreaEditDrawer from "../components/LifeAreaEditDrawer";
 import { useIsDesktop } from "../hooks/useIsDesktop";
-
-const initialLifeAreas: LifeAreaData[] = [
-  {
-    id: "career",
-    name: "Career",
-    currentState:
-      "Work might feel a bit undefined right now. This is a place to notice that without needing a plan.",
-    confidence: "unclear",
-    topQuestion: "What kind of work might actually feel like you?",
-    helper: "You don't need to define this yet.",
-  },
-  {
-    id: "money",
-    name: "Money",
-    currentState:
-      "This could feel shaky, stable, or somewhere in between. All of that belongs here.",
-    confidence: "forming",
-    topQuestion: "What feels most confusing about money right now?",
-    helper: "It's okay if this changes.",
-  },
-  {
-    id: "relationships",
-    name: "Relationships",
-    currentState:
-      "Connections might feel close, distant, or in transition. There’s room for all of that.",
-    confidence: "very-unclear",
-    topQuestion: "Where do you feel most unsure in your connections?",
-    helper: "Unclear is still a valid state.",
-  },
-  {
-    id: "identity",
-    name: "Identity",
-    currentState:
-      "Who you are might feel in motion. This is a quiet place to notice what’s shifting.",
-    confidence: "unclear",
-    topQuestion: "What parts of you feel like they’re still forming?",
-    helper: "It's okay if this feels unclear.",
-  },
-  {
-    id: "health",
-    name: "Health",
-    currentState:
-      "Energy, rest, and movement can be inconsistent. You don’t have to fix anything here.",
-    confidence: "unclear",
-    topQuestion: "What are you most curious about in your health right now?",
-    helper: "Uncertainty is part of the process.",
-  },
-];
+import { getLifeAreas, saveLifeArea } from "../actions/life-areas";
 
 export default function Dashboard() {
-  const [lifeAreas, setLifeAreas] = useState<LifeAreaData[]>(initialLifeAreas);
+  const [lifeAreas, setLifeAreas] = useState<LifeAreaData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeEditAreaId, setActiveEditAreaId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<LifeAreaData | null>(null);
   const isDesktop = useIsDesktop();
 
-  const handleUpdateArea = (updatedArea: LifeAreaData) => {
+  useEffect(() => {
+    async function loadLifeAreas() {
+      try {
+        const areas = await getLifeAreas();
+        setLifeAreas(areas);
+      } catch (error) {
+        console.error("Error loading life areas:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadLifeAreas();
+  }, []);
+
+  const handleUpdateArea = async (updatedArea: LifeAreaData) => {
+    // Optimistically update UI
     setLifeAreas((prev) =>
       prev.map((area) => (area.id === updatedArea.id ? updatedArea : area))
     );
+
+    // Persist to Supabase
+    try {
+      await saveLifeArea(updatedArea);
+    } catch (error) {
+      console.error("Error saving life area:", error);
+      // Revert on error - could show a subtle message here if needed
+      // For now, we'll keep the optimistic update
+    }
   };
 
   const startEditForArea = (areaId: string) => {
@@ -93,6 +71,18 @@ export default function Dashboard() {
     commitDraft();
     finishEditSession();
   };
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        <div className="mb-12 text-center sm:mb-16">
+          <p className="mx-auto max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
+            Loading your space…
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-6">

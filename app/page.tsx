@@ -1,16 +1,27 @@
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
       <h2 className="mb-4 text-2xl font-light text-neutral-600">
         You don't need to have answers today.
       </h2>
       <Link
-        href="/dashboard"
+        href="/login"
         className="mt-6 rounded-lg bg-neutral-200 px-6 py-2 text-sm font-light text-neutral-700 transition-colors hover:bg-neutral-300"
       >
-        Go to Dashboard
+        Go to your space
       </Link>
     </div>
   );
