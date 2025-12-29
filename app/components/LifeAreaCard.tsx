@@ -27,6 +27,7 @@ interface LifeAreaCardProps {
   onChangeDraft: (updated: LifeAreaData) => void;
   onPrimaryAction: () => void;
   onSecondaryAction: () => void;
+  isSaving?: boolean;
 }
 
 interface ConfidenceDotProps {
@@ -79,6 +80,7 @@ export default function LifeAreaCard({
   onChangeDraft,
   onPrimaryAction,
   onSecondaryAction,
+  isSaving = false,
 }: LifeAreaCardProps) {
   const isDesktop = useIsDesktop();
   const [contentOpacity, setContentOpacity] = useState(1);
@@ -365,14 +367,16 @@ export default function LifeAreaCard({
               <button
                 type="button"
                 onClick={onPrimaryAction}
-                className="flex w-full items-center justify-center rounded-full bg-neutral-800 px-4 py-2.5 text-sm font-medium text-neutral-50 shadow-sm transition-colors hover:bg-neutral-700"
+                disabled={isSaving}
+                className="flex w-full items-center justify-center rounded-full bg-neutral-800 px-4 py-2.5 text-sm font-medium text-neutral-50 shadow-sm transition-colors hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 This is enough for now
               </button>
               <button
                 type="button"
                 onClick={onSecondaryAction}
-                className="w-full text-center text-xs text-neutral-500 underline-offset-2 hover:underline"
+                disabled={isSaving}
+                className="w-full text-center text-xs text-neutral-500 underline-offset-2 hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:no-underline"
               >
                 I&apos;ll come back to this
               </button>

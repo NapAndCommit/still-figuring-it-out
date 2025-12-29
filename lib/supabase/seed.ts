@@ -52,24 +52,39 @@ const DEFAULT_LIFE_AREAS: SeedLifeArea[] = [
   },
 ];
 
-export async function seedLifeAreas(userId: string) {
+export async function seedLifeAreas(userId: string): Promise<void> {
   const supabase = await createClient();
 
-  // Check if user already has life areas
-  const { data: existingAreas } = await supabase
+  // Fetch existing life areas
+  const { data: existingAreas, error: fetchError } = await supabase
     .from("life_areas")
-    .select("id")
-    .eq("user_id", userId)
-    .limit(1);
+    .select("name")
+    .eq("user_id", userId);
 
-  if (existingAreas && existingAreas.length > 0) {
-    // User already has life areas, don't seed
+  if (fetchError) {
+    console.error("Error fetching existing life areas:", fetchError);
+    throw fetchError;
+  }
+
+  const existingNames = new Set(existingAreas?.map((area) => area.name) || []);
+
+  // If user has all 5 default life areas, no action needed
+  if (existingNames.size >= 5) {
     return;
   }
 
-  // Insert default life areas
-  const { error } = await supabase.from("life_areas").insert(
-    DEFAULT_LIFE_AREAS.map((area) => ({
+  // Determine which life areas need to be created
+  const areasToCreate = DEFAULT_LIFE_AREAS.filter(
+    (area) => !existingNames.has(area.name)
+  );
+
+  if (areasToCreate.length === 0) {
+    return;
+  }
+
+  // Quietly recreate missing life areas
+  const { error: insertError } = await supabase.from("life_areas").insert(
+    areasToCreate.map((area) => ({
       user_id: userId,
       name: area.name,
       current_state: area.currentState,
@@ -79,9 +94,9 @@ export async function seedLifeAreas(userId: string) {
     }))
   );
 
-  if (error) {
-    console.error("Error seeding life areas:", error);
-    throw error;
+  if (insertError) {
+    console.error("Error seeding life areas:", insertError);
+    throw insertError;
   }
 }
 

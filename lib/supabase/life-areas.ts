@@ -75,8 +75,10 @@ export async function fetchLifeAreas(userId: string): Promise<LifeAreaData[]> {
     .order("name");
 
   if (error) {
+    // Log technical error for developers
     console.error("Error fetching life areas:", error);
-    throw error;
+    // Return empty array instead of throwing to prevent UI crashes
+    return [];
   }
 
   return (data || []).map(rowToLifeAreaData);
@@ -86,7 +88,7 @@ export async function updateLifeArea(
   userId: string,
   lifeAreaId: string,
   data: LifeAreaData
-): Promise<void> {
+): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
 
   const row = lifeAreaDataToRow(data, userId);
@@ -98,8 +100,11 @@ export async function updateLifeArea(
     .eq("user_id", userId);
 
   if (error) {
+    // Log technical error for developers
     console.error("Error updating life area:", error);
-    throw error;
+    return { success: false, error: error.message };
   }
+
+  return { success: true };
 }
 

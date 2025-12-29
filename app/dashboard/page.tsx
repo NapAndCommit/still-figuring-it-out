@@ -6,41 +6,67 @@ import LifeAreaEditDrawer from "../components/LifeAreaEditDrawer";
 import { useIsDesktop } from "../hooks/useIsDesktop";
 import { getLifeAreas, saveLifeArea } from "../actions/life-areas";
 
+type LoadingState = "loading" | "empty" | "error" | "ready";
+
 export default function Dashboard() {
   const [lifeAreas, setLifeAreas] = useState<LifeAreaData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loadingState, setLoadingState] = useState<LoadingState>("loading");
   const [activeEditAreaId, setActiveEditAreaId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<LifeAreaData | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const isDesktop = useIsDesktop();
 
   useEffect(() => {
     async function loadLifeAreas() {
       try {
         const areas = await getLifeAreas();
-        setLifeAreas(areas);
+        if (areas.length === 0) {
+          setLoadingState("empty");
+        } else {
+          setLifeAreas(areas);
+          setLoadingState("ready");
+        }
       } catch (error) {
-        console.error("Error loading life areas:", error);
-      } finally {
-        setIsLoading(false);
+        // Technical error logged in server action
+        setLoadingState("error");
       }
     }
     loadLifeAreas();
   }, []);
 
-  const handleUpdateArea = async (updatedArea: LifeAreaData) => {
+  const handleUpdateArea = async (updatedArea: LifeAreaData): Promise<boolean> => {
+    // Prevent double-submits
+    if (isSaving) return false;
+
+    setIsSaving(true);
+    setSaveMessage(null);
+
     // Optimistically update UI
+    const previousAreas = [...lifeAreas];
     setLifeAreas((prev) =>
       prev.map((area) => (area.id === updatedArea.id ? updatedArea : area))
     );
 
     // Persist to Supabase
-    try {
-      await saveLifeArea(updatedArea);
-    } catch (error) {
-      console.error("Error saving life area:", error);
-      // Revert on error - could show a subtle message here if needed
-      // For now, we'll keep the optimistic update
+    const result = await saveLifeArea(updatedArea);
+
+    if (!result.success) {
+      // Revert optimistic update on error
+      setLifeAreas(previousAreas);
+      // Show calm error message
+      setSaveMessage("That didn't save yet. You can try again when you're ready.");
+      // Clear message after a moment
+      setTimeout(() => setSaveMessage(null), 5000);
+      setIsSaving(false);
+      return false;
     }
+
+    // Subtle success feedback
+    setSaveMessage("Saved for now.");
+    setTimeout(() => setSaveMessage(null), 3000);
+    setIsSaving(false);
+    return true;
   };
 
   const startEditForArea = (areaId: string) => {
@@ -50,9 +76,11 @@ export default function Dashboard() {
     setEditDraft(area);
   };
 
-  const commitDraft = () => {
-    if (!activeEditAreaId || !editDraft) return;
-    handleUpdateArea(editDraft);
+  const commitDraft = async (): Promise<boolean> => {
+    if (!activeEditAreaId || !editDraft) return false;
+    const result = await handleUpdateArea(editDraft);
+    // Return true if save succeeded, false otherwise
+    return result;
   };
 
   const finishEditSession = () => {
@@ -60,24 +88,57 @@ export default function Dashboard() {
     setEditDraft(null);
   };
 
-  const handlePrimaryAction = () => {
+  const handlePrimaryAction = async () => {
     // "This is enough for now" – commit and close
-    commitDraft();
-    finishEditSession();
+    const success = await commitDraft();
+    // Only close if save succeeded
+    if (success) {
+      finishEditSession();
+    }
   };
 
-  const handleSecondaryAction = () => {
+  const handleSecondaryAction = async () => {
     // "I'll come back to this" – still keep whatever was written so far, then close
-    commitDraft();
-    finishEditSession();
+    const success = await commitDraft();
+    // Only close if save succeeded
+    if (success) {
+      finishEditSession();
+    }
   };
 
-  if (isLoading) {
+  // Loading state
+  if (loadingState === "loading") {
     return (
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <div className="mb-12 text-center sm:mb-16">
           <p className="mx-auto max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
-            Loading your space…
+            Getting your space ready…
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state (should rarely happen due to auto-recovery)
+  if (loadingState === "empty") {
+    return (
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        <div className="mb-12 text-center sm:mb-16">
+          <p className="mx-auto max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
+            Something didn't load yet. You can refresh when ready.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (loadingState === "error") {
+    return (
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        <div className="mb-12 text-center sm:mb-16">
+          <p className="mx-auto max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
+            Something didn't load yet. You can refresh when ready.
           </p>
         </div>
       </div>
@@ -86,6 +147,13 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-6">
+      {/* Save message (subtle feedback) */}
+      {saveMessage && (
+        <div className="mb-4 text-center">
+          <p className="text-sm text-neutral-500">{saveMessage}</p>
+        </div>
+      )}
+
       {/* Intro section */}
       <div className="mb-12 text-center sm:mb-16">
         <p className="mx-auto max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
@@ -112,6 +180,7 @@ export default function Dashboard() {
             onChangeDraft={setEditDraft}
             onPrimaryAction={handlePrimaryAction}
             onSecondaryAction={handleSecondaryAction}
+            isSaving={isSaving && activeEditAreaId === area.id}
           />
         ))}
       </div>
@@ -169,12 +238,13 @@ export default function Dashboard() {
 
       {/* Desktop edit drawer */}
       {isDesktop && (
-        <LifeAreaEditDrawer
+          <LifeAreaEditDrawer
           open={Boolean(activeEditAreaId && editDraft)}
           data={editDraft}
           onChange={setEditDraft}
           onSaveAndClose={handlePrimaryAction}
           onDiscardAndClose={handleSecondaryAction}
+          isSaving={isSaving}
         />
       )}
     </div>
