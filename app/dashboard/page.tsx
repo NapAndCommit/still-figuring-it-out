@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import LifeAreaCard, { LifeAreaData } from "../components/LifeAreaCard";
 import LifeAreaEditDrawer from "../components/LifeAreaEditDrawer";
+import WeeklyReflection from "../components/WeeklyReflection";
 import { useIsDesktop } from "../hooks/useIsDesktop";
 import { getLifeAreas, saveLifeArea } from "../actions/life-areas";
 
@@ -164,6 +165,9 @@ export default function Dashboard() {
           whenever they no longer feel true.
         </p>
       </div>
+
+      {/* Weekly Reflection section */}
+      <WeeklyReflection />
 
       {/* Life Areas Grid */}
       {/* Mobile & Tablet: Auto-flow grid */}
