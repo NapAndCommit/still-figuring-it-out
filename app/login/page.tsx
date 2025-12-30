@@ -1,43 +1,84 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showHoldingState, setShowHoldingState] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+  const justLeft = searchParams.get("left") === "true";
+
+  // Check if user is already authenticated and redirect
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        router.push("/dashboard");
+      }
+    };
+    checkSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setMessage("");
+    setIsSubmitting(true);
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
       },
     });
 
-    if (error) {
-      setMessage("Something went wrong. Please try again.");
-      setIsLoading(false);
+    // Silently handle errors - don't show error messages
+    if (!error) {
+      setShowHoldingState(true);
     } else {
-      setMessage("Check your email for a private link.");
-      setIsLoading(false);
+      // On error, still show holding state to avoid exposing technical issues
+      setShowHoldingState(true);
     }
+    setIsSubmitting(false);
   };
 
+  // Holding state after email submission
+  if (showHoldingState) {
+    return (
+      <div className="mx-auto max-w-md">
+        <div className="space-y-4 text-center">
+          <p className="mx-auto max-w-xl text-base leading-relaxed text-neutral-600 sm:text-lg">
+            I've sent you a private link.
+          </p>
+          <p className="mx-auto max-w-xl text-sm leading-relaxed text-neutral-500 sm:text-base">
+            It's just to make sure this space stays yours.
+          </p>
+          <p className="mx-auto max-w-xl pt-4 text-xs leading-relaxed text-neutral-400 sm:text-sm">
+            You can close this tab — the dashboard will open when you return.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Initial form state
   return (
     <div className="mx-auto max-w-md">
-      <div className="mb-8 text-center">
+      <div className="mb-6 text-center">
         <p className="mx-auto max-w-xl text-base leading-relaxed text-neutral-600 sm:text-lg">
-          This is just to keep your reflections private.
+          This is just to keep your space private.
         </p>
+        {justLeft && (
+          <p className="mx-auto mt-3 max-w-xl text-xs leading-relaxed text-neutral-400 sm:text-sm">
+            Your space is still here.
+          </p>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -50,24 +91,25 @@ export default function LoginPage() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
+            placeholder="email address"
             required
             className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-sm outline-none transition-colors focus:border-neutral-300 focus:ring-0 placeholder:text-neutral-400"
-            disabled={isLoading}
+            disabled={isSubmitting}
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={isLoading || !email}
-          className="w-full rounded-full bg-neutral-800 px-6 py-3 text-sm font-medium text-neutral-50 shadow-sm transition-colors hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isLoading ? "Sending..." : "Send me a private link"}
-        </button>
-
-        {message && (
-          <p className="text-center text-sm text-neutral-600">{message}</p>
-        )}
+        <div className="space-y-2">
+          <button
+            type="submit"
+            disabled={isSubmitting || !email}
+            className="w-full rounded-full bg-neutral-800 px-6 py-3 text-sm font-medium text-neutral-50 shadow-sm transition-colors hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            {isSubmitting ? "Sending link…" : "Continue with email"}
+          </button>
+          <p className="text-center text-xs leading-relaxed text-neutral-400">
+            We'll send you a link to continue.
+          </p>
+        </div>
       </form>
     </div>
   );

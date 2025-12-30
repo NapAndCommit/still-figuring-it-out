@@ -65,17 +65,21 @@ export default function LifeAreaEditDrawer({
 }: LifeAreaEditDrawerProps) {
   const [contentOpacity, setContentOpacity] = useState(0);
   const [hasTyped, setHasTyped] = useState(false);
+  const [hasFocusedInput, setHasFocusedInput] = useState(false);
   const initialDataRef = useRef<LifeAreaData | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open && data) {
       initialDataRef.current = { ...data };
       setHasTyped(false);
+      setHasFocusedInput(false);
       // Delay content fade-in slightly after drawer opens
       setTimeout(() => setContentOpacity(1), 50);
     } else {
       setContentOpacity(0);
+      setHasFocusedInput(false);
     }
   }, [open, data]);
 
@@ -88,6 +92,11 @@ export default function LifeAreaEditDrawer({
   }, [data?.currentState]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
+    // Prevent exit while any input/textarea is focused
+    if (hasFocusedInput) {
+      return;
+    }
+
     // Check if click is on the backdrop (not on the drawer panel)
     const target = e.target as HTMLElement;
     const drawer = target.closest('aside');
@@ -101,6 +110,25 @@ export default function LifeAreaEditDrawer({
         onDiscardAndClose();
       }
     }
+  };
+
+  // Handle input focus - disable click-outside-to-close
+  const handleInputFocus = () => {
+    setHasFocusedInput(true);
+  };
+
+  // Handle input blur - re-enable click-outside-to-close after checking if focus moved to another input
+  const handleInputBlur = () => {
+    // Use setTimeout to check if focus moved to another input in the drawer
+    setTimeout(() => {
+      const activeElement = document.activeElement;
+      const drawer = activeElement?.closest('aside');
+      
+      // If focus is not within the drawer (or no element is focused), re-enable click-outside
+      if (!drawer || activeElement === document.body) {
+        setHasFocusedInput(false);
+      }
+    }, 0);
   };
 
   const handleChange = (updated: LifeAreaData) => {
@@ -161,6 +189,8 @@ export default function LifeAreaEditDrawer({
                   onChange={(e) =>
                     handleChange({ ...data, currentState: e.target.value })
                   }
+                  onFocus={handleInputFocus}
+                  onBlur={handleInputBlur}
                   className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-800 shadow-sm outline-none focus:border-neutral-300 focus:ring-0 placeholder:transition-opacity placeholder:duration-200 overflow-hidden"
                   placeholder="What does this area feel like right now? You can write in fragments or unfinished thoughts."
                   style={{
@@ -209,11 +239,14 @@ export default function LifeAreaEditDrawer({
                   Question on your mind
                 </p>
                 <input
+                  ref={inputRef}
                   type="text"
                   value={data.topQuestion}
                   onChange={(e) =>
                     handleChange({ ...data, topQuestion: e.target.value })
                   }
+                  onFocus={handleInputFocus}
+                  onBlur={handleInputBlur}
                   className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-800 shadow-sm outline-none focus:border-neutral-300 focus:ring-0 placeholder:transition-opacity placeholder:duration-200"
                   placeholder="What's the main thing you're unsure about here?"
                 />

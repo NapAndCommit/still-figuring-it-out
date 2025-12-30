@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     }
   }
 
-  // Return the user to an error page with instructions
+  // Silently redirect to login if there's an issue
   return NextResponse.redirect(`${origin}/login`);
 }
 
