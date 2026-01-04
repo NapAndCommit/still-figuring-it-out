@@ -5,6 +5,7 @@ import Link from "next/link";
 import LifeAreaCard, { LifeAreaData } from "../components/LifeAreaCard";
 import LifeAreaEditDrawer from "../components/LifeAreaEditDrawer";
 import WeeklyReflection from "../components/WeeklyReflection";
+import PatternAwareness from "../components/PatternAwareness";
 import { useIsDesktop } from "../hooks/useIsDesktop";
 import { getLifeAreas, saveLifeArea } from "../actions/life-areas";
 
@@ -179,6 +180,9 @@ export default function Dashboard() {
           Past reflections
         </Link>
       </div>
+
+      {/* Pattern Awareness section */}
+      <PatternAwareness />
 
       {/* Life Areas Grid */}
       {/* Mobile & Tablet: Auto-flow grid */}
