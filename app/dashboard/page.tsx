@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import LifeAreaCard, { LifeAreaData } from "../components/LifeAreaCard";
 import LifeAreaEditDrawer from "../components/LifeAreaEditDrawer";
 import WeeklyReflection from "../components/WeeklyReflection";
@@ -170,16 +169,6 @@ export default function Dashboard() {
 
       {/* Weekly Reflection section */}
       <WeeklyReflection />
-
-      {/* Reflection History link */}
-      <div className="mb-12 text-center sm:mb-16">
-        <Link
-          href="/reflections"
-          className="text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
-        >
-          Past reflections
-        </Link>
-      </div>
 
       {/* Pattern Awareness section */}
       <PatternAwareness />
