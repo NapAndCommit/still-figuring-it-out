@@ -18,7 +18,7 @@ export default function LogoutButton() {
       onClick={handleLogout}
       className="text-xs text-neutral-500 underline-offset-2 hover:underline"
     >
-      Leave
+      Step away
     </button>
   );
 }

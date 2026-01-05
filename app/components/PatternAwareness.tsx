@@ -48,7 +48,7 @@ export default function PatternAwareness() {
   return (
     <div className="mb-12 sm:mb-16">
       <h2 className="mb-4 text-xs font-normal text-neutral-400">
-        Things that keep coming up
+        Things that keep coming up for now
       </h2>
 
       <div className="space-y-2.5 text-xs leading-relaxed text-neutral-500">

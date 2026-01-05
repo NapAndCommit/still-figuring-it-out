@@ -115,7 +115,7 @@ export default function Dashboard() {
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <div className="mb-12 text-center sm:mb-16">
           <p className="mx-auto max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
-            Getting your space ready…
+            Getting your space ready.
           </p>
         </div>
       </div>
@@ -128,7 +128,7 @@ export default function Dashboard() {
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <div className="mb-12 text-center sm:mb-16">
           <p className="mx-auto max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
-            Something didn't load yet. You can refresh when ready.
+            Something didn&apos;t load yet. You can refresh whenever you feel like it.
           </p>
         </div>
       </div>
@@ -141,7 +141,7 @@ export default function Dashboard() {
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <div className="mb-12 text-center sm:mb-16">
           <p className="mx-auto max-w-2xl text-base leading-relaxed text-neutral-600 sm:text-lg">
-            Something didn't load yet. You can refresh when ready.
+            Something didn&apos;t load yet. You can refresh whenever you feel like it.
           </p>
         </div>
       </div>

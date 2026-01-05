@@ -264,7 +264,7 @@ export default function LifeAreaEditDrawer({
                 type="button"
                 onClick={onSaveAndClose}
                 disabled={isSaving}
-                className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-50 shadow-sm transition-colors hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-50 shadow-sm transition-colors duration-200 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 This is enough for now
               </button>
@@ -272,7 +272,7 @@ export default function LifeAreaEditDrawer({
                 type="button"
                 onClick={onDiscardAndClose}
                 disabled={isSaving}
-                className="text-xs text-neutral-500 underline-offset-2 hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:no-underline"
+                className="text-xs text-neutral-500 underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-50 disabled:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 I&apos;ll come back to this
               </button>

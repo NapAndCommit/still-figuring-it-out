@@ -147,7 +147,7 @@ export default function ReflectionDetailPage() {
           ) : (
             <div className="mx-auto max-w-2xl">
               <p className="text-sm italic text-neutral-400">
-                No response written
+                Nothing written here yet.
               </p>
             </div>
           )}
@@ -186,9 +186,9 @@ export default function ReflectionDetailPage() {
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="rounded-full border border-neutral-300 bg-white px-6 py-2.5 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 sm:px-8 sm:py-3 sm:text-base"
+            className="rounded-full border border-neutral-300 bg-white px-6 py-2.5 text-sm font-medium text-neutral-700 shadow-sm transition-colors duration-200 hover:bg-neutral-50 sm:px-8 sm:py-3 sm:text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-50"
           >
-            Edit
+            Add or change words
           </button>
         ) : (
           <>
@@ -200,17 +200,17 @@ export default function ReflectionDetailPage() {
                 setSaveMessage(null);
               }}
               disabled={isSaving}
-              className="rounded-full border border-neutral-300 bg-white px-6 py-2.5 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed sm:px-8 sm:py-3 sm:text-base"
+              className="rounded-full border border-neutral-300 bg-white px-6 py-2.5 text-sm font-medium text-neutral-700 shadow-sm transition-colors duration-200 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50 sm:px-8 sm:py-3 sm:text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-50"
             >
-              Cancel
+              Go back to how it was
             </button>
             <button
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="rounded-full bg-neutral-800 px-6 py-2.5 text-sm font-medium text-neutral-50 shadow-sm transition-colors hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed sm:px-8 sm:py-3 sm:text-base"
+              className="rounded-full bg-neutral-800 px-6 py-2.5 text-sm font-medium text-neutral-50 shadow-sm transition-colors duration-200 hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-50 sm:px-8 sm:py-3 sm:text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-50"
             >
-              {isSaving ? "Saving..." : "Save"}
+              {isSaving ? "Saving..." : "Keep this for now"}
             </button>
           </>
         )}

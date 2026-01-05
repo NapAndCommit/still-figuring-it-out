@@ -102,12 +102,12 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting || !email}
-            className="w-full rounded-full bg-neutral-800 px-6 py-3 text-sm font-medium text-neutral-50 shadow-sm transition-colors hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-30"
+            className="w-full rounded-full bg-neutral-800 px-6 py-3 text-sm font-medium text-neutral-50 shadow-sm transition-colors duration-200 hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-50"
           >
-            {isSubmitting ? "Sending link…" : "Continue with email"}
+            {isSubmitting ? "Sending link…" : "Send me a link"}
           </button>
           <p className="text-center text-xs leading-relaxed text-neutral-400">
-            We'll send you a link to continue.
+            We&apos;ll email you a link to open your space.
           </p>
         </div>
       </form>

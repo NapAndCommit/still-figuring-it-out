@@ -192,7 +192,7 @@ export default function LifeAreaCard({
   return (
     <div
       onClick={!isEditing ? onStartEdit : undefined}
-      className="group relative flex h-full cursor-pointer flex-col rounded-2xl bg-white p-5 shadow-sm ring-1 ring-neutral-100 transition-all duration-200 hover:shadow-md hover:ring-neutral-200 hover:-translate-y-0.5 focus-within:ring-2 focus-within:ring-neutral-300 focus-within:shadow-md focus-within:outline-none active:translate-y-0 active:shadow-sm sm:p-6"
+      className="group relative flex h-full cursor-pointer flex-col rounded-2xl bg-white/95 p-5 shadow-sm ring-1 ring-neutral-100 transition-shadow duration-200 hover:shadow-md hover:ring-neutral-200 focus-within:ring-2 focus-within:ring-neutral-300 focus-within:shadow-md focus-within:outline-none sm:p-6"
       role={!isEditing ? "button" : undefined}
       tabIndex={!isEditing ? 0 : undefined}
       onKeyDown={
@@ -368,7 +368,7 @@ export default function LifeAreaCard({
                 type="button"
                 onClick={onPrimaryAction}
                 disabled={isSaving}
-                className="flex w-full items-center justify-center rounded-full bg-neutral-800 px-4 py-2.5 text-sm font-medium text-neutral-50 shadow-sm transition-colors hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex w-full items-center justify-center rounded-full bg-neutral-800 px-4 py-2.5 text-sm font-medium text-neutral-50 shadow-sm transition-colors duration-200 hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-50"
               >
                 This is enough for now
               </button>
@@ -376,7 +376,7 @@ export default function LifeAreaCard({
                 type="button"
                 onClick={onSecondaryAction}
                 disabled={isSaving}
-                className="w-full text-center text-xs text-neutral-500 underline-offset-2 hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:no-underline"
+                className="w-full text-center text-xs text-neutral-500 underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-50 disabled:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-50"
               >
                 I&apos;ll come back to this
               </button>

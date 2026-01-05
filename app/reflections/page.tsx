@@ -120,9 +120,9 @@ function ReflectionItem({ reflection }: { reflection: WeeklyReflection }) {
   return (
     <Link
       href={`/reflections/${reflection.id}`}
-      className="block group"
+      className="group block"
     >
-      <div className="py-4 transition-opacity group-hover:opacity-70">
+      <div className="py-4 transition-opacity duration-200 group-hover:opacity-90">
         <div className="mb-3">
           <p className="text-xs text-neutral-400 sm:text-sm">{timeRef}</p>
         </div>
@@ -141,7 +141,7 @@ function ReflectionItem({ reflection }: { reflection: WeeklyReflection }) {
         {!hasResponse && (
           <div className="mt-3">
             <p className="text-sm italic text-neutral-400">
-              No response written
+              Nothing written here yet.
             </p>
           </div>
         )}
